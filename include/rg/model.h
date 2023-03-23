@@ -21,7 +21,6 @@ public:
 
     std::string directory;
     Model(std::string path) {
-
         loadModel(path);
     }
 
