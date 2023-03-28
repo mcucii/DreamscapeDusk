@@ -1,7 +1,6 @@
 # project_base
-Prazan projekat sa pratećim bibliotekama koje koristimo na času. 
+Projekat iz grafike - Masa Cucic
 
-prva izmena
 
 # Uputstvo
 1. `git clone https://github.com/matf-racunarska-grafika/project_base.git`
