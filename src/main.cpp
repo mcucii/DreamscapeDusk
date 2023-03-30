@@ -104,14 +104,23 @@ int main() {
     // -------------------------
     Shader ourShader("resources/shaders/2.model_lighting.vs", "resources/shaders/2.model_lighting.fs");
     Shader skyBoxShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
+    Shader groundShader("resources/shaders/ground.vs", "resources/shaders/ground.fs");
 
 
+    // ground
+    float groundVertices[] = {
+            // positions          // normals        //texCoords
+            0.5f,  0.5f,  0.0f,   0.0f, 0.0f, -1.0f, 1.0f,  1.0f,     // top right
+            0.5f, -0.5f,  0.0f,   0.0f, 0.0f, -1.0f, 1.0f,  0.0f,     // bottom right
+            -0.5f, -0.5f,  0.0f,  0.0f, 0.0f, -1.0f, 0.0f,  0.0f,     // bottom left
+            -0.5f,  0.5f,  0.0f,  0.0f, 0.0f, -1.0f, 0.0f,  1.0f      // top left
+    };
 
-//    float groundVertices[] = {
-//
-//            1.0f, 1.0f, 0.0f,
-//
-//    };
+    // ground vertices for use in EBO
+    unsigned int groundIndices[] = {
+            0, 1, 3,  // first Triangle
+            1, 2, 3   // second Triangle
+    };
 
     // skybox coordinates
     float skyBoxVertices[] = {
@@ -159,6 +168,33 @@ int main() {
             1.0f, -1.0f,  1.0f
     };
 
+
+    ////ground
+    unsigned int groundVAO, groundVBO, groundEBO;
+    glGenVertexArrays(1, &groundVAO);
+    glGenBuffers(1, &groundVBO);
+    glGenBuffers(1, &groundEBO);
+
+    glBindVertexArray(groundVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, groundVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(groundVertices), groundVertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, groundEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(groundIndices), groundIndices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void *)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void *)(6*sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+
+    ////skyBox
     unsigned int skyBoxVAO, skyBoxVBO;
     glGenVertexArrays(1, &skyBoxVAO);
     glGenBuffers(1, &skyBoxVBO);
@@ -197,8 +233,9 @@ int main() {
 
 
 
-//     draw in wireframe
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+//    //stbi_set_flip_vertically_on_load(false);
+
 
     // render loop
     // -----------
@@ -209,20 +246,35 @@ int main() {
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // input
-        // -----
         processInput(window);
 
-        // render
-        // ------
-
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        glm::mat4 model(1.0f);
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
+        unsigned int groundTex = loadTexture(FileSystem::getPath("resources/textures/kamenje2.jpg").c_str());
+        glBindTexture(GL_TEXTURE_2D, groundTex);
+        // render ground
+        groundShader.use();
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, -0.8f, 0.0f));
+        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(20.0f));
+        groundShader.setMat4("model", model);
+        groundShader.setMat4("view", view);
+        groundShader.setMat4("projection", projection);
 
+        glBindVertexArray(groundVAO);
+        //glEnable(GL_CULL_FACE);     // floor won't be visible if looked from bellow
+        glCullFace(GL_BACK);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        //glDisable(GL_CULL_FACE);
+
+
+        // render skybox
         glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
         skyBoxShader.use();
         view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
@@ -236,12 +288,18 @@ int main() {
         glBindVertexArray(0);
         glDepthFunc(GL_LESS); // set depth function back to default
 
+
+
+
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+    glDeleteVertexArrays(1, &groundVAO);
     glDeleteVertexArrays(1, &skyBoxVAO);
+    glDeleteBuffers(1, &groundVBO);
+    glDeleteBuffers(1, &groundEBO);
     glDeleteBuffers(1, &skyBoxVBO);
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
@@ -343,44 +401,39 @@ unsigned int loadCubemap(vector<std::string> faces){
 }
 
 
+unsigned int loadTexture(char const *path){
+    unsigned textureId;
+    glGenTextures(1, &textureId);
 
+    int width, height, nrComponents;
+    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
+    //cerr << width << ' ' << height << endl;
 
+    if(data)
+    {
+        GLenum format = GL_RED;
+        if(nrComponents == 1)
+            format = GL_RED;
+        else if(nrComponents == 3)
+            format = GL_RGB;
+        else if(nrComponents == 4)
+            format = GL_RGBA;
 
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-//unsigned int loadTexture(char const * path)
-//{
-//    unsigned int textureID;
-//    glGenTextures(1, &textureID);
-//
-//    int width, height, nrComponents;
-//    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
-//    if (data)
-//    {
-//        GLenum format;
-//        if (nrComponents == 1)
-//            format = GL_RED;
-//        else if (nrComponents == 3)
-//            format = GL_RGB;
-//        else if (nrComponents == 4)
-//            format = GL_RGBA;
-//
-//        glBindTexture(GL_TEXTURE_2D, textureID);
-//        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-//        glGenerateMipmap(GL_TEXTURE_2D);
-//
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//
-//        stbi_image_free(data);
-//    }
-//    else
-//    {
-//        std::cout << "Texture failed to load at path: " << path << std::endl;
-//        stbi_image_free(data);
-//    }
-//
-//    return textureID;
-//}
+        stbi_image_free(data);
+    }
+    else{
+        cout << "Texture failed to load!" << path << "\n";
+        stbi_image_free(data);
+    }
+
+    return textureId;
+}
