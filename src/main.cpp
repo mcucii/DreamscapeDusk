@@ -1,3 +1,4 @@
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -38,17 +39,6 @@ bool firstMouse = true;
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -97,7 +87,7 @@ int main() {
     glEnable(GL_DEPTH_TEST);
 
 
- //    stbi_set_flip_vertically_on_load(true);
+    //    stbi_set_flip_vertically_on_load(true);
 
 
     // build and compile shaders
@@ -235,7 +225,7 @@ int main() {
 
 
 //    //stbi_set_flip_vertically_on_load(false);
-
+    unsigned int groundTex = loadTexture(FileSystem::getPath("resources/textures/kamenje2.jpg").c_str());
 
     // render loop
     // -----------
@@ -255,7 +245,7 @@ int main() {
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
-        unsigned int groundTex = loadTexture(FileSystem::getPath("resources/textures/kamenje2.jpg").c_str());
+
         glBindTexture(GL_TEXTURE_2D, groundTex);
         // render ground
         groundShader.use();

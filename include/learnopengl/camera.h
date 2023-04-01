@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <stdlib.h>
 
 #include <vector>
 
@@ -12,13 +13,15 @@ enum Camera_Movement {
     FORWARD,
     BACKWARD,
     LEFT,
-    RIGHT
+    RIGHT,
+    UP,
+    DOWN
 };
 
 // Default camera values
 const float YAW         = -90.0f;
 const float PITCH       =  0.0f;
-const float SPEED       =  2.5f;
+const float SPEED       =  3.5f;
 const float SENSITIVITY =  0.1f;
 const float ZOOM        =  45.0f;
 
@@ -37,7 +40,7 @@ public:
     float Yaw;
     float Pitch;
     // camera options
-    float MovementSpeed ;
+    float MovementSpeed;
     float MouseSensitivity;
     float Zoom;
 
@@ -72,6 +75,7 @@ public:
         float velocity = MovementSpeed * deltaTime;
         if (direction == FORWARD)
             Position += Front * velocity;
+
         if (direction == BACKWARD)
             Position -= Front * velocity;
         if (direction == LEFT)
