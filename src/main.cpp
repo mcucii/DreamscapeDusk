@@ -40,7 +40,11 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-
+//lighting
+glm::vec3 lightPos(2.0f, 1.0f, 1.0f);
+//glm::vec3 lightPos(1.0f, 1.0f, -1.0f);
+glm::vec3 dirLightPos(-0.9f, 0.2f, -3.0f);
+glm::vec3 cubePos(0.0f, -0.29f, 0.0f);
 
 int main() {
     // glfw: initialize and configure
@@ -95,6 +99,8 @@ int main() {
     Shader ourShader("resources/shaders/2.model_lighting.vs", "resources/shaders/2.model_lighting.fs");
     Shader skyBoxShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
     Shader groundShader("resources/shaders/ground.vs", "resources/shaders/ground.fs");
+    Shader lightingShader("resources/shaders/model_lighting.vs", "resources/shaders/model_lighting.fs");
+    Shader lightCubeShader("resources/shaders/light_source.vs", "resources/shaders/light_source.fs");
 
 
     // ground
@@ -112,6 +118,52 @@ int main() {
             1, 2, 3   // second Triangle
     };
 
+
+    // cube
+    float cubeVertices[] = {
+            // positions          // normals           // texture coords
+            -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+            0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
+            0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+            0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+
+            -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+            0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
+            0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+            0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+
+            -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+            -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+            -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+            -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+            -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+            -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+
+            0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+            0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+            0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+            0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+            0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+            0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+
+            -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+            0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
+            0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+            0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+
+            -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+            0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+            0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+            0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
+    };
     // skybox coordinates
     float skyBoxVertices[] = {
             // positions
@@ -159,7 +211,7 @@ int main() {
     };
 
 
-    ////ground
+    //ground
     unsigned int groundVAO, groundVBO, groundEBO;
     glGenVertexArrays(1, &groundVAO);
     glGenBuffers(1, &groundVBO);
@@ -184,7 +236,39 @@ int main() {
     glBindVertexArray(0);
 
 
-    ////skyBox
+
+    //cube
+    unsigned int cubeVAO, cubeVBO;
+    glGenVertexArrays(1, &cubeVAO);
+    glGenBuffers(1, &cubeVBO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+
+    glBindVertexArray(cubeVAO);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(6*sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+
+
+    //light cube
+    unsigned int lightcubeVAO;
+    glGenVertexArrays(1, &lightcubeVAO);
+    glBindVertexArray(lightcubeVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+
+
+    //skyBox
     unsigned int skyBoxVAO, skyBoxVBO;
     glGenVertexArrays(1, &skyBoxVAO);
     glGenBuffers(1, &skyBoxVBO);
@@ -197,6 +281,35 @@ int main() {
     glEnableVertexAttribArray(0);
 
 
+
+
+
+
+    // load models
+    // -----------
+    Model palette("resources/objects/palette/Palette_garden_table.obj");
+    palette.SetShaderTextureNamePrefix("material.");
+
+    Model pineapple("resources/objects/pineapple/pineapple.obj");
+    pineapple.SetShaderTextureNamePrefix("material.");
+
+
+
+
+    // cube texture load
+    unsigned int diffuseMapCube = loadTexture(FileSystem::getPath("resources/textures/stonyTex.jpg").c_str());
+    unsigned int specularMapCube = loadTexture(FileSystem::getPath("resources/textures/stonyTex_spec.png").c_str());
+    lightingShader.use();
+    lightingShader.setInt("material.diffuse", 0);
+    lightingShader.setInt("material.specular", 1);
+
+    // ground texture load
+    unsigned int groundTex = loadTexture(FileSystem::getPath("resources/textures/tiles2.jpg").c_str());
+    groundShader.use();
+    groundShader.setInt("texture1", 0);
+
+
+    // skybox textures load
     vector<std::string> faces
             {
                     FileSystem::getPath("resources/textures/skybox/s1_right.jpg"),
@@ -207,25 +320,10 @@ int main() {
                     FileSystem::getPath("resources/textures/skybox/s1_back.jpg")
             };
     unsigned int cubemapTexture = loadCubemap(faces);
-
     skyBoxShader.use();
     skyBoxShader.setInt("skybox", 0);
 
 
-
-    // load models
-    // -----------
-    Model palette("resources/objects/palette/Palette_garden_table.obj");
-    palette.SetShaderTextureNamePrefix("material.");
-
-//    Model pineapple("resources/objects/pineapple/pineapple.obj");
-//    pineapple.SetShaderTextureNamePrefix("material.");
-
-
-
-
-//    //stbi_set_flip_vertically_on_load(false);
-    unsigned int groundTex = loadTexture(FileSystem::getPath("resources/textures/kamenje2.jpg").c_str());
 
     // render loop
     // -----------
@@ -241,18 +339,119 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glm::mat4 model(1.0f);
+
+        lightingShader.use();
+        lightingShader.setVec3("viewPos", camera.Position);
+
+        //dirlight setup
+        lightingShader.setVec3("dirLight.ambient", glm::vec3(0.5f));
+        lightingShader.setVec3("dirLight.diffuse", glm::vec3(0.7f));
+        lightingShader.setVec3("dirLight.specular", glm::vec3(1.0f));
+        lightingShader.setVec3("dirLight.direction", dirLightPos);
+
+        // pointlight setup
+        lightingShader.setVec3("pointLight.position", lightPos);
+        lightingShader.setVec3("pointLight.ambient", glm::vec3(0.2f));
+        lightingShader.setVec3("pointLight.diffuse", glm::vec3(1.0f));
+        lightingShader.setVec3("pointLight.specular", glm::vec3(1.0f));
+        lightingShader.setFloat("pointLight.constant", 1.0f);
+        lightingShader.setFloat("pointLight.linear", 0.05f);
+        lightingShader.setFloat("pointLight.quadratic", 0.012f);
+
+        // material setup
+        lightingShader.setFloat("material.shininess", 32.0f);
+
+
+
+        // view/projection transformations
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        lightingShader.setMat4("projection", projection);
+        lightingShader.setMat4("view", view);
+
+        // world transformation
+        glm::mat4 model(1.0f);
+        model = glm::translate(model, cubePos);
+        lightingShader.setMat4("model", model);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, diffuseMapCube);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, specularMapCube);
+
+        //render cube
+//        glBindVertexArray(cubeVAO);
+//        glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
-        glBindTexture(GL_TEXTURE_2D, groundTex);
-        // render ground
-        groundShader.use();
+
+
+         //light cube
+        lightCubeShader.use();
+        lightCubeShader.setMat4("view", view);
+        lightCubeShader.setMat4("projection", projection);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, lightPos);
+        model = glm::scale(model, glm::vec3(0.2f));
+        lightCubeShader.setMat4("model", model);
+
+        //render light cube
+        glBindVertexArray(lightcubeVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+        // palette model
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-2.0f, -0.8f, -2.0f));
+        model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(1.3f));
+        lightingShader.use();
+        lightingShader.setMat4("model", model);
+        palette.Draw(lightingShader);
+
+        // pineapple model
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-2.0f, -0.351f, -1.8f));
+        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 1.0f));
+        model = glm::scale(model, glm::vec3(0.015f));
+        lightingShader.use();
+        lightingShader.setMat4("model", model);
+        pineapple.Draw(lightingShader);
+
+
+//        // render ground
+//        groundShader.use();
+//
+//        glActiveTexture(GL_TEXTURE0);
+//        glBindTexture(GL_TEXTURE_2D, groundTex);
+//        model = glm::mat4(1.0f);
+//        model = glm::translate(model, glm::vec3(0.0f, -0.8f, 0.0f));
+//        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+//        model = glm::scale(model, glm::vec3(10.0f));
+//        groundShader.setMat4("model", model);
+//        groundShader.setMat4("view", view);
+//        groundShader.setMat4("projection", projection);
+//
+//        glBindVertexArray(groundVAO);
+//        //glEnable(GL_CULL_FACE);     // floor won't be visible if looked from bellow
+//        glCullFace(GL_BACK);
+//        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+//        //glDisable(GL_CULL_FACE);
+
+
+        //render ground
+        lightingShader.use();
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, diffuseMapCube);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, specularMapCube);
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, -0.8f, 0.0f));
         model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(20.0f));
+        model = glm::scale(model, glm::vec3(10.0f));
         groundShader.setMat4("model", model);
         groundShader.setMat4("view", view);
         groundShader.setMat4("projection", projection);
@@ -262,7 +461,6 @@ int main() {
         glCullFace(GL_BACK);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
         //glDisable(GL_CULL_FACE);
-
 
         // render skybox
         glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
