@@ -293,6 +293,18 @@ int main() {
     Model pineapple("resources/objects/pineapple/pineapple.obj");
     pineapple.SetShaderTextureNamePrefix("material.");
 
+    Model bird("resources/objects/bird/13563_Jambu_fruit_dove_v1_L3.obj");
+    bird.SetShaderTextureNamePrefix("material.");
+
+    Model apricot("resources/objects/apricot/Apricot_02_hi_poly.obj");
+    apricot.SetShaderTextureNamePrefix("material.");
+
+    Model peach("resources/objects/peach/12203_Fruit_v1_L3.obj");
+    peach.SetShaderTextureNamePrefix("material.");
+
+    Model streetLight("resources/objects/Streetlight/Streetlight_HighRes.obj");
+    streetLight.SetShaderTextureNamePrefix("material.");
+
 
 
 
@@ -307,6 +319,10 @@ int main() {
     unsigned int groundTex = loadTexture(FileSystem::getPath("resources/textures/tiles2.jpg").c_str());
     groundShader.use();
     groundShader.setInt("texture1", 0);
+
+    unsigned int diffuseFloorMap = loadTexture(FileSystem::getPath("resources/textures/stonefloor_n.jpg").c_str());
+    unsigned int specularFloorMap = loadTexture(FileSystem::getPath("resources/textures/stonefloor_spec.jpg").c_str());
+
 
 
     // skybox textures load
@@ -344,8 +360,8 @@ int main() {
         lightingShader.setVec3("viewPos", camera.Position);
 
         //dirlight setup
-        lightingShader.setVec3("dirLight.ambient", glm::vec3(0.5f));
-        lightingShader.setVec3("dirLight.diffuse", glm::vec3(0.7f));
+        lightingShader.setVec3("dirLight.ambient", glm::vec3(0.1f));
+        lightingShader.setVec3("dirLight.diffuse", glm::vec3(0.5f));
         lightingShader.setVec3("dirLight.specular", glm::vec3(1.0f));
         lightingShader.setVec3("dirLight.direction", dirLightPos);
 
@@ -419,6 +435,48 @@ int main() {
         lightingShader.setMat4("model", model);
         pineapple.Draw(lightingShader);
 
+        // bird model
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-2.7f, -0.345f, -1.8f));
+        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 1.0f));
+        model = glm::rotate(model, glm::radians(-70.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::scale(model, glm::vec3(0.05f));
+        lightingShader.use();
+        lightingShader.setMat4("model", model);
+        bird.Draw(lightingShader);
+
+
+        // apricot model
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-2.2f, -0.29f, -1.7f));
+        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 1.0f));
+        //model = glm::rotate(model, glm::radians(-70.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::scale(model, glm::vec3(0.033f));
+        lightingShader.use();
+        lightingShader.setMat4("model", model);
+        apricot.Draw(lightingShader);
+
+
+        // peach model
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-2.2f, -0.36f, -2.0f));
+        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 1.0f));
+        //model = glm::rotate(model, glm::radians(-70.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::scale(model, glm::vec3(0.023f));
+        lightingShader.use();
+        lightingShader.setMat4("model", model);
+        peach.Draw(lightingShader);
+
+        // streetLight model
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-4.0f, -1.0f, -2.0f));
+        //model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 1.0f));
+        //model = glm::rotate(model, glm::radians(-70.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::scale(model, glm::vec3(0.008f));
+        lightingShader.use();
+        lightingShader.setMat4("model", model);
+        streetLight.Draw(lightingShader);
+
 
 //        // render ground
 //        groundShader.use();
@@ -444,23 +502,24 @@ int main() {
         lightingShader.use();
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, diffuseMapCube);
+        glBindTexture(GL_TEXTURE_2D, diffuseFloorMap);
 
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, specularMapCube);
+        glBindTexture(GL_TEXTURE_2D, specularFloorMap);
+
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, -0.8f, 0.0f));
         model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(10.0f));
+        model = glm::scale(model, glm::vec3(15.0f));
         groundShader.setMat4("model", model);
         groundShader.setMat4("view", view);
         groundShader.setMat4("projection", projection);
 
         glBindVertexArray(groundVAO);
-        //glEnable(GL_CULL_FACE);     // floor won't be visible if looked from bellow
+        glEnable(GL_CULL_FACE);     // floor won't be visible if looked from bellow
         glCullFace(GL_BACK);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-        //glDisable(GL_CULL_FACE);
+        glDisable(GL_CULL_FACE);
 
         // render skybox
         glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
