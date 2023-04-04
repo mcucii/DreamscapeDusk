@@ -41,10 +41,22 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 //lighting
-glm::vec3 lightPos(2.0f, 1.0f, 1.0f);
-//glm::vec3 lightPos(1.0f, 1.0f, -1.0f);
+glm::vec3 lightPos(-5.1f, -0.22f, 0.9f);
+glm::vec3 lightPosTable(-1.5f, -0.3f, -2.2f);
+
 glm::vec3 dirLightPos(-0.9f, 0.2f, -3.0f);
-glm::vec3 cubePos(0.0f, -0.29f, 0.0f);
+//glm::vec3 cubePos(0.0f, -0.29f, 0.0f);
+
+
+
+
+// additional
+glm::vec3 birdPos(-2.7f, -0.345f, -1.8f);
+int num_of_walls = 10;
+
+// keys
+bool spotlightPressed = false;
+
 
 int main() {
     // glfw: initialize and configure
@@ -96,11 +108,9 @@ int main() {
 
     // build and compile shaders
     // -------------------------
-    Shader ourShader("resources/shaders/2.model_lighting.vs", "resources/shaders/2.model_lighting.fs");
     Shader skyBoxShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
-    Shader groundShader("resources/shaders/ground.vs", "resources/shaders/ground.fs");
     Shader lightingShader("resources/shaders/model_lighting.vs", "resources/shaders/model_lighting.fs");
-    Shader lightCubeShader("resources/shaders/light_source.vs", "resources/shaders/light_source.fs");
+    Shader lightSourceShader("resources/shaders/light_source.vs", "resources/shaders/light_source.fs");
 
 
     // ground
@@ -302,10 +312,14 @@ int main() {
     Model peach("resources/objects/peach/12203_Fruit_v1_L3.obj");
     peach.SetShaderTextureNamePrefix("material.");
 
-    Model streetLight("resources/objects/Streetlight/Streetlight_HighRes.obj");
-    streetLight.SetShaderTextureNamePrefix("material.");
+    Model chair("resources/objects/chair/chair.obj");
+    chair.SetShaderTextureNamePrefix("material.");
 
+    Model guitar("resources/objects/guitar/GipsyGuitar.obj");
+    guitar.SetShaderTextureNamePrefix("material.");
 
+    Model statue1("resources/objects/statue1/12329_Statue_v1_l3.obj");
+    statue1.SetShaderTextureNamePrefix("material.");
 
 
     // cube texture load
@@ -315,13 +329,9 @@ int main() {
     lightingShader.setInt("material.diffuse", 0);
     lightingShader.setInt("material.specular", 1);
 
-    // ground texture load
-    unsigned int groundTex = loadTexture(FileSystem::getPath("resources/textures/tiles2.jpg").c_str());
-    groundShader.use();
-    groundShader.setInt("texture1", 0);
-
-    unsigned int diffuseFloorMap = loadTexture(FileSystem::getPath("resources/textures/stonefloor_n.jpg").c_str());
-    unsigned int specularFloorMap = loadTexture(FileSystem::getPath("resources/textures/stonefloor_spec.jpg").c_str());
+    // floor texture load
+    unsigned int diffuseFloorMap = loadTexture(FileSystem::getPath("resources/textures/Pebbles_BaseColor.jpg").c_str());
+    unsigned int specularFloorMap = loadTexture(FileSystem::getPath("resources/textures/Pebbles_Height.png").c_str());
 
 
 
@@ -359,63 +369,122 @@ int main() {
         lightingShader.use();
         lightingShader.setVec3("viewPos", camera.Position);
 
-        //dirlight setup
+        // dirlight setup
         lightingShader.setVec3("dirLight.ambient", glm::vec3(0.1f));
-        lightingShader.setVec3("dirLight.diffuse", glm::vec3(0.5f));
-        lightingShader.setVec3("dirLight.specular", glm::vec3(1.0f));
+        lightingShader.setVec3("dirLight.diffuse", glm::vec3(0.3f));
+        lightingShader.setVec3("dirLight.specular", glm::vec3(0.5f));
         lightingShader.setVec3("dirLight.direction", dirLightPos);
 
-        // pointlight setup
-        lightingShader.setVec3("pointLight.position", lightPos);
-        lightingShader.setVec3("pointLight.ambient", glm::vec3(0.2f));
-        lightingShader.setVec3("pointLight.diffuse", glm::vec3(1.0f));
-        lightingShader.setVec3("pointLight.specular", glm::vec3(1.0f));
-        lightingShader.setFloat("pointLight.constant", 1.0f);
-        lightingShader.setFloat("pointLight.linear", 0.05f);
-        lightingShader.setFloat("pointLight.quadratic", 0.012f);
+        // pointlight corner setup
+        lightingShader.setVec3("pointLights[0].position", lightPos);
+        lightingShader.setVec3("pointLights[0].ambient", glm::vec3(1.0f, 0.64f, 0.3f));
+        lightingShader.setVec3("pointLights[0].diffuse", glm::vec3(0.5f));
+        lightingShader.setVec3("pointLights[0].specular", glm::vec3(0.5f));
+        lightingShader.setFloat("pointLights[0].constant", 1.0f);
+        lightingShader.setFloat("pointLights[0].linear", 0.05f);
+        lightingShader.setFloat("pointLights[0].quadratic", 0.012f);
+
+        // pointlight table setup
+        lightingShader.setVec3("pointLights[1].position", lightPosTable);
+        lightingShader.setVec3("pointLights[1].ambient", glm::vec3(0.0f, 0.2f, 0.6f));
+        lightingShader.setVec3("pointLights[1].diffuse", glm::vec3(0.3f));
+        lightingShader.setVec3("pointLights[1].specular", glm::vec3(1.0f));
+        lightingShader.setFloat("pointLights[1].constant", 1.0f);
+        lightingShader.setFloat("pointLights[1].linear", 0.6f);
+        lightingShader.setFloat("pointLights[1].quadratic", 0.5f);
+
+        // spotlight setup
+        lightingShader.setVec3("spotLight.position", camera.Position);
+        lightingShader.setVec3("spotLight.direction", camera.Front);
+        lightingShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+        lightingShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+        lightingShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+        lightingShader.setFloat("spotLight.constant", 1.0f);
+        lightingShader.setFloat("spotLight.linear", 0.05f);
+        lightingShader.setFloat("spotLight.quadratic", 0.1f);
+        lightingShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(7.2f)));
+        lightingShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(12.0f)));
+        lightingShader.setBool("pressed", spotlightPressed);
 
         // material setup
         lightingShader.setFloat("material.shininess", 32.0f);
+
+        //lighting shader setup
+        lightSourceShader.use();
+        lightSourceShader.setInt("material.diffuse", 0);
+        lightSourceShader.setInt("material.specular", 1);
+
 
 
 
         // view/projection transformations
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        lightingShader.use();
         lightingShader.setMat4("projection", projection);
         lightingShader.setMat4("view", view);
 
-        // world transformation
-        glm::mat4 model(1.0f);
-        model = glm::translate(model, cubePos);
-        lightingShader.setMat4("model", model);
-
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, diffuseMapCube);
-
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, specularMapCube);
 
-        //render cube
-//        glBindVertexArray(cubeVAO);
-//        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glm::mat4 model(1.0f);
+
+        for(int i = 0; i < num_of_walls; i++){
+            // world transformation
+            glm::mat4 model(1.0f);
+            if(i <= 4)
+                model = glm::translate(model, glm::vec3(-5.1f, -0.56f, 1.25f-1.5f*i));
+            else
+                model = glm::translate(model, glm::vec3(1.7f, -0.56f, 8.75f-1.5f*i));
+            model = glm::scale(model, glm::vec3(0.4f, 0.5f, 1.05f));
+            lightingShader.setMat4("model", model);
+
+            // render cube/wall
+            glBindVertexArray(cubeVAO);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
 
 
 
-         //light cube
-        lightCubeShader.use();
-        lightCubeShader.setMat4("view", view);
-        lightCubeShader.setMat4("projection", projection);
+
+
+         //light cube corner
+        lightSourceShader.use();
+        lightSourceShader.setMat4("view", view);
+        lightSourceShader.setMat4("projection", projection);
         model = glm::mat4(1.0f);
         model = glm::translate(model, lightPos);
         model = glm::scale(model, glm::vec3(0.2f));
-        lightCubeShader.setMat4("model", model);
+        lightSourceShader.setMat4("model", model);
 
         //render light cube
         glBindVertexArray(lightcubeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
+
+        // light cube table
+        lightSourceShader.use();
+        lightSourceShader.setMat4("view", view);
+        lightSourceShader.setMat4("projection", projection);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, lightPosTable);
+        //model = glm::scale(model, glm::vec3(0.1f));
+        model = glm::scale(model, glm::vec3(0.1f));
+        lightSourceShader.setMat4("model", model);
+
+        //render light cube
+        glBindVertexArray(lightcubeVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+
+
+
+
+        // render models
 
         // palette model
         model = glm::mat4(1.0f);
@@ -437,7 +506,7 @@ int main() {
 
         // bird model
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-2.7f, -0.345f, -1.8f));
+        model = glm::translate(model, birdPos);
         model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 1.0f));
         model = glm::rotate(model, glm::radians(-70.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         model = glm::scale(model, glm::vec3(0.05f));
@@ -467,35 +536,40 @@ int main() {
         lightingShader.setMat4("model", model);
         peach.Draw(lightingShader);
 
-        // streetLight model
+
+        // render 2 chairs
+        for(int i = 0; i < 2; i++){
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(-3.6f+2.0f*i, -0.77f, -1.7f-2.0*i));
+            model = glm::rotate(model, glm::radians(70.0f-i*70.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::scale(model, glm::vec3(0.013f));
+            lightingShader.use();
+            lightingShader.setMat4("model", model);
+            chair.Draw(lightingShader);
+        }
+
+
+        // guitar model
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-4.0f, -1.0f, -2.0f));
-        //model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 1.0f));
-        //model = glm::rotate(model, glm::radians(-70.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::scale(model, glm::vec3(0.008f));
+        model = glm::translate(model, glm::vec3(-1.6f, 0.23f, -3.9f));
+        model = glm::rotate(model, glm::radians(35.5f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.01f));
         lightingShader.use();
         lightingShader.setMat4("model", model);
-        streetLight.Draw(lightingShader);
+        guitar.Draw(lightingShader);
+
+        // statue1 model
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.7f, -1.0f, -3.0f));
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::scale(model, glm::vec3(0.005f));
+        lightingShader.use();
+        lightingShader.setMat4("model", model);
+        statue1.Draw(lightingShader);
 
 
-//        // render ground
-//        groundShader.use();
-//
-//        glActiveTexture(GL_TEXTURE0);
-//        glBindTexture(GL_TEXTURE_2D, groundTex);
-//        model = glm::mat4(1.0f);
-//        model = glm::translate(model, glm::vec3(0.0f, -0.8f, 0.0f));
-//        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-//        model = glm::scale(model, glm::vec3(10.0f));
-//        groundShader.setMat4("model", model);
-//        groundShader.setMat4("view", view);
-//        groundShader.setMat4("projection", projection);
-//
-//        glBindVertexArray(groundVAO);
-//        //glEnable(GL_CULL_FACE);     // floor won't be visible if looked from bellow
-//        glCullFace(GL_BACK);
-//        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-//        //glDisable(GL_CULL_FACE);
+
 
 
         //render ground
@@ -503,23 +577,25 @@ int main() {
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, diffuseFloorMap);
-
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, specularFloorMap);
 
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, -0.8f, 0.0f));
+        model = glm::translate(model, glm::vec3(-1.7f, -0.8f, -1.7f));
         model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(15.0f));
-        groundShader.setMat4("model", model);
-        groundShader.setMat4("view", view);
-        groundShader.setMat4("projection", projection);
+        model = glm::scale(model, glm::vec3(7.0f));
+        lightingShader.setMat4("model", model);
+        lightingShader.setMat4("view", view);
+        lightingShader.setMat4("projection", projection);
 
         glBindVertexArray(groundVAO);
         glEnable(GL_CULL_FACE);     // floor won't be visible if looked from bellow
         glCullFace(GL_BACK);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
         glDisable(GL_CULL_FACE);
+
+
+
 
         // render skybox
         glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
@@ -570,6 +646,24 @@ void processInput(GLFWwindow *window)
         camera.ProcessKeyboard(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.ProcessKeyboard(RIGHT, deltaTime);
+
+    if(glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS){
+        if(birdPos.x >= -3.0f)
+            birdPos = birdPos + glm::vec3(-0.02f,0,0);
+    }
+
+    if(glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS){
+        if(birdPos.x <= -2.3)
+        birdPos = birdPos + glm::vec3(0.02f,0,0.0);
+    }
+
+    if(glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS){
+        spotlightPressed = true;
+    }
+
+    if(glfwGetKey(window, GLFW_KEY_L) == GLFW_RELEASE){
+        spotlightPressed = false;
+    }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
