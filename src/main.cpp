@@ -106,6 +106,7 @@ int main() {
     //    stbi_set_flip_vertically_on_load(true);
 
 
+
     // build and compile shaders
     // -------------------------
     Shader skyBoxShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
@@ -132,26 +133,30 @@ int main() {
     // cube
     float cubeVertices[] = {
             // positions          // normals           // texture coords
-            -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+            //donja
+            -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,         // suprotno
             0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
             0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
             0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
             -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
             -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
 
-            -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+            //gornja
+            -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,         // suprotno
+            0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
             0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
             0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-            0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
             -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
 
+            // leva
             -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+            -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
             -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
             -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-            -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-            -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
             -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+            -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+
 
             0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
             0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
@@ -160,12 +165,14 @@ int main() {
             0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
             0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
 
+
             -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
             0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
             0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
             0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
             -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
             -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+
 
             -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
             0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
@@ -174,6 +181,7 @@ int main() {
             -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
             -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
     };
+
     // skybox coordinates
     float skyBoxVertices[] = {
             // positions
@@ -321,6 +329,9 @@ int main() {
     Model statue1("resources/objects/statue1/12329_Statue_v1_l3.obj");
     statue1.SetShaderTextureNamePrefix("material.");
 
+    Model windowModel("resources/objects/window/window_big.obj");
+    windowModel.SetShaderTextureNamePrefix("material.");
+
 
     // cube texture load
     unsigned int diffuseMapCube = loadTexture(FileSystem::getPath("resources/textures/stonyTex.jpg").c_str());
@@ -431,6 +442,9 @@ int main() {
 
         glm::mat4 model(1.0f);
 
+        // render cubes/walls
+
+
         for(int i = 0; i < num_of_walls; i++){
             // world transformation
             glm::mat4 model(1.0f);
@@ -442,8 +456,12 @@ int main() {
             lightingShader.setMat4("model", model);
 
             // render cube/wall
+            glEnable(GL_CULL_FACE);
+            glFrontFace(GL_CW);
+            glCullFace(GL_BACK);
             glBindVertexArray(cubeVAO);
             glDrawArrays(GL_TRIANGLES, 0, 36);
+            glDisable(GL_CULL_FACE);
         }
 
 
@@ -569,8 +587,15 @@ int main() {
         statue1.Draw(lightingShader);
 
 
+//        // windowModel model
+//        model = glm::mat4(1.0f);
+//        model = glm::translate(model, glm::vec3(0.7f, -1.0f, -3.0f));
+//        model = glm::scale(model, glm::vec3(0.5f));
+//        lightingShader.use();
+//        lightingShader.setMat4("model", model);
+//        windowModel.Draw(lightingShader);
 
-
+//        Provera
 
         //render ground
         lightingShader.use();
@@ -589,10 +614,7 @@ int main() {
         lightingShader.setMat4("projection", projection);
 
         glBindVertexArray(groundVAO);
-        glEnable(GL_CULL_FACE);     // floor won't be visible if looked from bellow
-        glCullFace(GL_BACK);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-        glDisable(GL_CULL_FACE);
 
 
 
