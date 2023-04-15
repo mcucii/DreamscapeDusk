@@ -56,6 +56,8 @@ int num_of_walls = 10;
 
 // keys
 bool spotlightPressed = false;
+bool blinnPressed = false;
+
 
 
 int main() {
@@ -112,6 +114,7 @@ int main() {
     Shader skyBoxShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
     Shader lightingShader("resources/shaders/model_lighting.vs", "resources/shaders/model_lighting.fs");
     Shader lightSourceShader("resources/shaders/light_source.vs", "resources/shaders/light_source.fs");
+    Shader blendingShader("resources/shaders/blending_shader.vs", "resources/shaders/blending_shader.fs");
 
 
     // ground
@@ -180,6 +183,17 @@ int main() {
             0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
             -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
             -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
+    };
+
+    float transparentVertices[] = {
+            // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+            0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+            0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+            1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+
+            0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+            1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+            1.0f,  0.5f,  0.0f,  1.0f,  0.0f
     };
 
     // skybox coordinates
@@ -285,6 +299,20 @@ int main() {
     glEnableVertexAttribArray(0);
 
 
+    // transparent VAO
+    unsigned int transparentVAO, transparentVBO;
+    glGenVertexArrays(1, &transparentVAO);
+    glGenBuffers(1, &transparentVBO);
+    glBindVertexArray(transparentVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, transparentVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glBindVertexArray(0);
+
+
 
     //skyBox
     unsigned int skyBoxVAO, skyBoxVBO;
@@ -343,7 +371,14 @@ int main() {
     // floor texture load
     unsigned int diffuseFloorMap = loadTexture(FileSystem::getPath("resources/textures/Pebbles_BaseColor.jpg").c_str());
     unsigned int specularFloorMap = loadTexture(FileSystem::getPath("resources/textures/Pebbles_Height.png").c_str());
+    unsigned int transparentTexture = loadTexture(FileSystem::getPath("resources/textures/bush.png").c_str());
 
+    vector<glm::vec3> bushes
+    {
+        glm::vec3(-0.8f, -0.5f, 0.0f),
+        glm::vec3(0.2f, -0.5f, 0.5f),
+        glm::vec3(-0.3f, -0.5f, -0.5f),
+    };
 
 
     // skybox textures load
@@ -416,6 +451,7 @@ int main() {
         lightingShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(7.2f)));
         lightingShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(12.0f)));
         lightingShader.setBool("pressed", spotlightPressed);
+        lightingShader.setBool("blinn", blinnPressed);
 
         // material setup
         lightingShader.setFloat("material.shininess", 32.0f);
@@ -442,9 +478,9 @@ int main() {
 
         glm::mat4 model(1.0f);
 
+
+
         // render cubes/walls
-
-
         for(int i = 0; i < num_of_walls; i++){
             // world transformation
             glm::mat4 model(1.0f);
@@ -463,9 +499,6 @@ int main() {
             glDrawArrays(GL_TRIANGLES, 0, 36);
             glDisable(GL_CULL_FACE);
         }
-
-
-
 
 
 
@@ -501,8 +534,7 @@ int main() {
 
 
 
-
-        // render models
+        ////// render models
 
         // palette model
         model = glm::mat4(1.0f);
@@ -532,7 +564,6 @@ int main() {
         lightingShader.setMat4("model", model);
         bird.Draw(lightingShader);
 
-
         // apricot model
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(-2.2f, -0.29f, -1.7f));
@@ -542,7 +573,6 @@ int main() {
         lightingShader.use();
         lightingShader.setMat4("model", model);
         apricot.Draw(lightingShader);
-
 
         // peach model
         model = glm::mat4(1.0f);
@@ -554,7 +584,6 @@ int main() {
         lightingShader.setMat4("model", model);
         peach.Draw(lightingShader);
 
-
         // render 2 chairs
         for(int i = 0; i < 2; i++){
             model = glm::mat4(1.0f);
@@ -565,7 +594,6 @@ int main() {
             lightingShader.setMat4("model", model);
             chair.Draw(lightingShader);
         }
-
 
         // guitar model
         model = glm::mat4(1.0f);
@@ -587,15 +615,23 @@ int main() {
         statue1.Draw(lightingShader);
 
 
-//        // windowModel model
-//        model = glm::mat4(1.0f);
-//        model = glm::translate(model, glm::vec3(0.7f, -1.0f, -3.0f));
-//        model = glm::scale(model, glm::vec3(0.5f));
-//        lightingShader.use();
-//        lightingShader.setMat4("model", model);
-//        windowModel.Draw(lightingShader);
+        // bushes
+        blendingShader.use();
+        blendingShader.setMat4("view", view);
+        blendingShader.setMat4("projection", projection);
+        glBindVertexArray(transparentVAO);
+        glBindTexture(GL_TEXTURE_2D, transparentTexture);
 
-//        Provera
+        for (unsigned int i = 0; i < bushes.size(); i++)
+        {
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, bushes[i]);
+            //model = glm::scale(model, glm::vec3(i/2+0.5f));
+            blendingShader.setMat4("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
+
+
 
         //render ground
         lightingShader.use();
@@ -669,12 +705,12 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.ProcessKeyboard(RIGHT, deltaTime);
 
-    if(glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS){
+    if(glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
         if(birdPos.x >= -3.0f)
             birdPos = birdPos + glm::vec3(-0.02f,0,0);
     }
 
-    if(glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS){
+    if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
         if(birdPos.x <= -2.3)
         birdPos = birdPos + glm::vec3(0.02f,0,0.0);
     }
@@ -686,6 +722,17 @@ void processInput(GLFWwindow *window)
     if(glfwGetKey(window, GLFW_KEY_L) == GLFW_RELEASE){
         spotlightPressed = false;
     }
+
+    if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
+    {
+        blinnPressed = true;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_B) == GLFW_RELEASE)
+    {
+        blinnPressed = false;
+    }
+
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
