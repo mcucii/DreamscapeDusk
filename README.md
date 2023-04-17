@@ -10,8 +10,10 @@ Projekat iz grafike - Maša Cucić
 5. Zaglavlja (h i hpp) fajlovi idu u include
 6. Šejderi idu u folder shaders. `Vertex shader` ima ekstenziju `.vs`, `fragment shader` ima ekstenziju `.fs`
 7. ALT+SHIFT+F10 -> project_base -> run
-8. Right i Left arrow key -> kretanje ptice
-9.  L -> flash light
-10. B -> Blinn-Phong
-11. Face Culling -> unutar svakog kvadra se ne vide stranice tog kvadra, ne renderuju se stranice koje se ne vide
+8. WSAD -> kretanje
+9. Right i Left arrow key -> kretanje ptice
+10. L -> flash light
+11. B -> Blinn-Phong
+12. Face Culling -> unutar svakog kvadra se ne vide stranice tog kvadra, ne renderuju se stranice koje se ne vide
+13. Link ka snimku projekta: https://www.youtube.com/watch?v=kXh8NJ2iQqM
 
