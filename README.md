@@ -16,5 +16,5 @@ Projekat iz grafike - Maša Cucić
 11. B -> Blinn-Phong
 12. J -> Bloom
 13. Face Culling -> unutar svakog kvadra se ne vide stranice tog kvadra, ne renderuju se stranice koje se ne vide
-14. Link ka snimku projekta: https://www.youtube.com/watch?v=kXh8NJ2iQqM
+14. Link ka snimku projekta: https://youtu.be/0uGflm77HiQ
 
