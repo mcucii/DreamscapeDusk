@@ -14,6 +14,7 @@ Projekat iz grafike - Maša Cucić
 9. Right i Left arrow key -> kretanje ptice
 10. L -> flash light
 11. B -> Blinn-Phong
-12. Face Culling -> unutar svakog kvadra se ne vide stranice tog kvadra, ne renderuju se stranice koje se ne vide
-13. Link ka snimku projekta: https://www.youtube.com/watch?v=kXh8NJ2iQqM
+12. J -> Bloom
+13. Face Culling -> unutar svakog kvadra se ne vide stranice tog kvadra, ne renderuju se stranice koje se ne vide
+14. Link ka snimku projekta: https://www.youtube.com/watch?v=kXh8NJ2iQqM
 
