@@ -1,20 +1,21 @@
 # DreamscapeDusk
-Projekat iz grafike - Maša Cucić
+Computer Graphics Project - Masa Cucic
 
+Demo video: https://youtu.be/0uGflm77HiQ
 
-# Uputstvo
+# Directions
 1. `git clone https://github.com/mcucii/DreamscapeDusk.git
 2. CLion -> Open -> path/to/my/project_base
-3. Main se nalazi u src/main.cpp
-4. Cpp fajlovi idu u src folder
-5. Zaglavlja (h i hpp) fajlovi idu u include
-6. Šejderi idu u folder shaders. `Vertex shader` ima ekstenziju `.vs`, `fragment shader` ima ekstenziju `.fs`
+3. main file is in src/main.cpp
+4. cpp files are in src folder
+5. headers files (h i hpp) are in include
+6. Shaders are in shaders folder. `Vertex shader` has extension `.vs`, `fragment shader` has extension `.fs`
 7. ALT+SHIFT+F10 -> project_base -> run
-8. WSAD -> kretanje
-9. Right i Left arrow key -> kretanje ptice
+8. WSAD -> movement
+9. Right i Left arrow key -> bird movement
 10. L -> flash light
 11. B -> Blinn-Phong
 12. J -> Bloom
-13. Face Culling -> unutar svakog kvadra se ne vide stranice tog kvadra, ne renderuju se stranice koje se ne vide
-14. Link ka snimku projekta: https://youtu.be/0uGflm77HiQ
+13. Face Culling
+14. Demo video: https://youtu.be/0uGflm77HiQ
 
