@@ -1,5 +1,6 @@
-# DreamscapeDusk
-Computer Graphics Project - Masa Cucic
+# Computer Graphics Project
+Faculty of Mathematics, University of Belgrade, 3rd year (2023)
+Masa Cucic
 
 Demo video: https://youtu.be/0uGflm77HiQ
 
